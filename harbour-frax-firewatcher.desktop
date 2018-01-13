@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+X-Nemo-Application-Type=silica-qt5
+Icon=harbour-frax-firewatcher
+Exec=harbour-frax-firewatcher
+Name=Firewatcher
+
+

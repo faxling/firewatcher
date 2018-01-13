@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>jolla-calendar-alarm.wav</file>
+        <file>44-04.wav</file>
+    </qresource>
+</RCC>
