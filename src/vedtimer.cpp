@@ -134,6 +134,7 @@ VedTimer::VedTimer()
 
     if (m_pCurrentValObj != nullptr)
     {
+      // update of value gives a call to setCurrent that updates the slider tex by UpdateValueText()
       if ( m_nCurrent > 0)
         m_pCurrentValObj->setProperty("value",(double)m_nCurrent / m_nInterval);
       else
