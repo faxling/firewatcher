@@ -4,6 +4,10 @@
 #include <QSoundEffect>
 #include <sailfishapp.h>
 
+extern "C" {
+#include "libiphb/libiphb.h"
+}
+
 
 MssTimer::MssTimer()
 {
@@ -17,7 +21,6 @@ MssTimer::MssTimer(std::function<void()> pfnTimeOut)
   m_bIsSingleShot = false;
 }
 
-
 MssTimer::~MssTimer()
 {
   delete m_pTimer;
@@ -29,7 +32,6 @@ void MssTimer::Start(int nMilliSec)
   m_pTimer->start(nMilliSec, this);
 }
 
-
 void MssTimer::SingleShot(int nMilliSec)
 {
   m_bIsSingleShot = true;
@@ -37,7 +39,6 @@ void MssTimer::SingleShot(int nMilliSec)
     m_pTimer->stop();
   m_pTimer->start(nMilliSec, this);
 }
-
 
 void MssTimer::Stop()
 {
@@ -60,6 +61,8 @@ void MssTimer::timerEvent(QTimerEvent *)
 
 QString FormatDuration(int nTime)
 {
+  if (nTime<0)
+    nTime = -nTime;
   wchar_t szStr[20];
   time_t now = nTime;
 
@@ -81,32 +84,73 @@ QString FormatDuration(int nTime)
 VedTimer::VedTimer()
   : QObject()
 {
-  m_pCurrentTimeTextObj = 0;
+  m_pCurrentValObj = 0;
   m_nCurrent = 0;
   m_pStartBtnTextObj = 0;
   m_oEffect = new QSoundEffect(this);
-  m_oEffect->setSource(QUrl("qrc:/44-04.wav"));
+  m_oEffect->setSource(QUrl("qrc:/44-04-2.wav"));
+  m_oEffect->setLoopCount(QSoundEffect::Infinite);
+
+  m_oThread.Set([&] {
+    m_iphbdHandler =  iphb_open(0);
+    for (;;)
+    {
+
+      QThread::msleep(1000);
+      if (m_eFireState != FireStateType::BURNING)
+        return;
+
+      iphb_wait(m_iphbdHandler,m_nCurrent - 10, m_nCurrent , 1);
+
+      if (m_oSecTimer.IsActive() == false)
+        m_oSecTimer.Start(1000);
+
+    }
+  });
+
+  m_oThread.start();
 
   m_oSecTimer.SetTimeOut([&] {
 
+    int nNow = time(0);
     if (m_eFireState == FireStateType::PAUSED || m_eFireState == FireStateType::STOP)
+    {
+      m_nLastTime = nNow;
       return;
-    --m_nCurrent;
+    }
+    iphb_discard_wakeups(m_iphbdHandler);
+    if ( m_nLastTime == nNow)
+      return;
+    m_nCurrent -=(nNow-m_nLastTime);
+    m_nLastTime = nNow;
 
     if (m_nCurrent <= 0)
     {
       if (m_oEffect->isPlaying()==false)
         m_oEffect->play();
 
-      m_pCurrentTimeTextObj->setProperty("text", FormatDuration(-m_nCurrent));
       SetFireState(FireStateType::FILLHERUP);
     }
-    else
-      m_pCurrentTimeTextObj->setProperty("text", FormatDuration(m_nCurrent));
+
+    if (m_pCurrentValObj != nullptr)
+    {
+      if ( m_nCurrent > 0)
+        m_pCurrentValObj->setProperty("value",(double)m_nCurrent / m_nInterval);
+      else
+      {
+        if (m_pCurrentValObj->property("value").toInt() != 0)
+          m_pCurrentValObj->setProperty("value",0);
+        else
+          UpdateValueText();
+      }
+    }
+
 
   });
+
   m_eFireState = FireStateType::STOP;
   m_oSecTimer.Start(1000);
+
 }
 
 void VedTimer::SetFireState(FireStateType e) {
@@ -116,6 +160,11 @@ void VedTimer::SetFireState(FireStateType e) {
   m_pStartBtnTextObj->setProperty("nFireState", int(m_eFireState));
 }
 
+void VedTimer::UpdateValueText()
+{
+  m_sTimeToFill = FormatDuration(m_nCurrent);
+  emit TimeToFillChanged();
+}
 
 void VedTimer::setVolume(double (tVal))
 {
@@ -125,7 +174,7 @@ void VedTimer::setVolume(double (tVal))
 void VedTimer::resetTimer()
 {
   m_nCurrent = m_nInterval;
-  m_pCurrentTimeTextObj->setProperty("text", FormatDuration(m_nCurrent));
+  UpdateValueText();
   SetFireState(FireStateType::STOP);
 }
 
@@ -133,34 +182,32 @@ void VedTimer::resetTimer()
 
 void VedTimer::setCurrent(double tVal)
 {
-
+  m_nCurrent = tVal *  m_nInterval;
+  UpdateValueText();
 }
 
 void VedTimer::startTimer(void)
 {
-  if (m_eFireState == FireStateType::STOP)
-  {
-    m_nCurrent = m_nInterval;
-    m_pCurrentTimeTextObj->setProperty("text", FormatDuration(m_nCurrent));
-    SetFireState(FireStateType::BURNING);
-    return;
-  }
-  if (m_eFireState == FireStateType::PAUSED)
-  {
-    SetFireState(FireStateType::BURNING);
-    return;
-  }
 
-  if (m_eFireState == FireStateType::BURNING)
+  m_oEffect->stop();
+  switch(m_eFireState)
   {
+  case FireStateType::STOP:
+    // m_nCurrent = m_nInterval;
+    UpdateValueText();
+    SetFireState(FireStateType::BURNING);
+    return;
+  case FireStateType::PAUSED:
+    SetFireState(FireStateType::BURNING);
+    return;
+  case FireStateType::BURNING:
     SetFireState(FireStateType::PAUSED);
     return;
-  }
-  if (m_eFireState == FireStateType::FILLHERUP)
-  {
+  case FireStateType::FILLHERUP:
+
     SetFireState(FireStateType::BURNING);
     m_nCurrent = m_nInterval;
-    m_pCurrentTimeTextObj->setProperty("text", FormatDuration(m_nCurrent));
+    UpdateValueText();
   }
 }
 
@@ -168,15 +215,17 @@ QString VedTimer::setInterval(double tVal)
 {
   m_nInterval = tVal * 7200;
   m_nInterval = (m_nInterval / 60) * 60;
+  if (m_nInterval < 60)
+    m_nInterval = 60;
+
   if (m_eFireState == FireStateType::STOP)
   {
     m_nCurrent = m_nInterval;
-    if (m_pCurrentTimeTextObj != nullptr)
-      m_pCurrentTimeTextObj->setProperty("text", FormatDuration(m_nCurrent));
   }
+  UpdateValueText();
+
   return FormatDuration(m_nInterval);
 }
-
 
 
 VedTimer::~VedTimer()

@@ -10,33 +10,14 @@ Page {
 
     id: page1
 
-    Image {
-        anchors.centerIn: parent
-        id: image1
-        source: "spis_large.png"
-    }
-
     Grid
     {
         id:idGrid
         anchors.centerIn: parent
-        spacing: 10
+   //     spacing: 10
 
         columns: 2
 
-        Label {
-            width:idRestbtn.width
-            horizontalAlignment : Text.AlignHCenter
-            id: idValLabel2
-            text: "Time Left"
-        }
-        Label {
-            width:idRestbtn.width
-            horizontalAlignment : Text.AlignHCenter
-
-            text: "0:0:3"
-            id:idValText
-        }
         Button {
 
             id:idRestbtn
@@ -63,25 +44,23 @@ Page {
                 }
             objectName: "idStartBtn"
 
-            Text {
-                id:idStartBtn
-                anchors.centerIn: parent
-                text:
-                    switch (parent.nFireState)
-                    {
-                    case 0:
-                        "Start"
-                        break;
-                    case 1:
-                        "Continue"
-                        break;
-                    case 2:
-                        "Pause"
-                        break;
-                    case 3:
-                        "Fill her up!"
-                    }
 
+            text:
+            {
+                switch (nFireState)
+                {
+                case 0:
+                    "Start"
+                    break;
+                case 1:
+                    "Continue"
+                    break;
+                case 2:
+                    "Pause"
+                    break;
+                case 3:
+                    "Fill her up!"
+                }
             }
 
             onClicked: {
@@ -90,8 +69,29 @@ Page {
 
         }
     }
+
+    Image {
+        anchors.horizontalCenter:  parent.horizontalCenter
+        anchors.top : idGrid.bottom
+        id: image1
+        source: "spis_large.png"
+    }
     Slider  {
-       /// anchors.bottom: idGrid.top
+        anchors.bottom: idGrid.top
+        id:idSliderCurrent
+
+        onValueChanged: {
+            VedTimer.setCurrent(value)
+        }
+
+        objectName:"idCurrentVal"
+        width: parent.width
+        value:1.0
+        valueText:"Time to Fill:"+VedTimer.TimeToFill
+    }
+
+    Slider  {
+        anchors.bottom: idSliderCurrent.top
         id:idSlider
         onValueChanged: {
             valueText = "Intervall:" + VedTimer.setInterval(value)
@@ -103,7 +103,7 @@ Page {
     }
 
     Slider  {
-       //  anchors.bottom: idSlider.top
+        anchors.bottom: idSlider.top
         id:idSliderVolume
 
         onValueChanged: {
@@ -113,18 +113,6 @@ Page {
         width: parent.width
         value: 0.2
         valueText: "Volume:" + value.toFixed(2)
-    }
-
-    Slider  {
-      //  anchors.bottom: idSlider.top
-        id:idSliderCurrent
-
-        onValueChanged: {
-            VedTimer.setCurrent(value)
-        }
-
-        objectName:"idCurrentValText"
-        width: parent.width
     }
 
     Component.onCompleted: {

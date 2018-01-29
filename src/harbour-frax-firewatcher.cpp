@@ -24,19 +24,18 @@ int main(int argc, char *argv[])
   VedTimer* pVedTimer(new VedTimer);
   QString qml = "qml/harbour-frax-firewatcher.qml";
 
-
   QQmlContext* p = view->rootContext();
   p->setContextProperty("VedTimer", pVedTimer);
   view->setSource(SailfishApp::pathTo(qml));
-  pVedTimer->SetCurrentTimeTextObj(view->rootObject()->findChild<QObject*>("idCurrentValText"));
-  pVedTimer->SetStartBtnTextObj(view->rootObject()->findChild<QObject*>("idStartBtn"));
-  view->show();
 
+  pVedTimer->SetCurrentValObj(view->rootObject()->findChild<QObject*>("idCurrentVal"));
+  pVedTimer->SetStartBtnTextObj(view->rootObject()->findChild<QObject*>("idStartBtn"));
+
+  view->show();
   QObject::connect(view->engine(), &QQmlEngine::quit,
                    app, &QGuiApplication::quit);
 
   app->exec();
-
 
   return 1;
 }

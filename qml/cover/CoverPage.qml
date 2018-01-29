@@ -35,7 +35,7 @@ CoverBackground {
     Image
     {
         id:idCoverImage
-        anchors.centerIn: parent
+        anchors.centerIn : parent
         source : "harbour-frax-webcam.png"
         anchors.bottom: parent.bottom
     }
@@ -44,6 +44,13 @@ CoverBackground {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: idCoverImage.top
         text: "Frax Firewatcher"
+    }
+
+    Label {
+        text:VedTimer.TimeToFill
+        id: idCurrentTime
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: idCoverImage.bottom
     }
 }
 

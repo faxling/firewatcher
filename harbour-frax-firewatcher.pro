@@ -18,24 +18,22 @@ QMAKE_CXXFLAGS += -std=c++0x
 CONFIG += sailfishapp
 
 SOURCES += src/harbour-frax-firewatcher.cpp \
-    src/vedtimer.cpp
+    src/vedtimer.cpp \
+    src/libiphb/libiphb.c
 
 OTHER_FILES += qml/harbour-frax-firewatcher.qml \
-    qml/pages/MyRect.qml \
-    qml/cover/CoverPage.qml \
     qml/cover/CoverPage.qml \
     qml/pages/FirstPage.qml \
     qml/pages/spis_large.png \
     rpm/harbour-frax-firewatcher.changes.in \
     rpm/harbour-frax-firewatcher.spec \
-    harbour-frax-firewatcher.desktop \
-    44-04.wav \
-    jolla-calendar-alarm.wav
-
+    harbour-frax-firewatcher.desktop
 
 HEADERS += \
-    src/vedtimer.h
-    
+    src/vedtimer.h \
+    src/libiphb/libiphb.h \
+    src/libiphb/iphb_internal.h \
+    src/libiphb/messages.h
 
 RESOURCES += \
     sound.qrc
