@@ -60,48 +60,54 @@ class VedTimer : public QObject
 public:
   Q_INVOKABLE void resetTimer();
   Q_INVOKABLE void startTimer();
-  Q_INVOKABLE QString setInterval(double tVal);
-  Q_INVOKABLE void setCurrent(double tVal);
   Q_INVOKABLE void setVolume(double tVal);
-  Q_PROPERTY(QString TimeToFill READ TimeToFill NOTIFY TimeToFillChanged)
-
+  Q_INVOKABLE void setInterval(double tVal);
+  Q_INVOKABLE void setCurrent(double tVal);
+  Q_PROPERTY(QString TimeToFillStr READ TimeToFillStr NOTIFY TimeToFillStrChanged)
+  Q_PROPERTY(QString IntervallStr READ IntervallStr NOTIFY IntervallStrChanged)
+ 
   enum class FireStateType {
     STOP,PAUSED, BURNING, FILLHERUP
   };
   VedTimer();
   ~VedTimer();
-  void UpdateValueText();
 
-  QString TimeToFill()
+  QString TimeToFillStr()
   {
-    return m_sTimeToFill;
+    return m_sTimeToFillStr;
   }
-
-  void SetCurrentValObj(QObject*p) {
+  void SetCurrentSliderVal(double fVal);
+  void UpdateValueText();
+  void UpdateIntervalText();
+void SetCurrentValObj(QObject*p) {
     m_pCurrentValObj = p;
   }
-
-  void SetStartBtnTextObj(QObject*p) {
+ void SetStartBtnTextObj(QObject*p) {
     m_pStartBtnTextObj = p;
+  }
+  QString IntervallStr()
+  {
+    return m_sIntervallStr;
   }
 
   void SetFireState(FireStateType e);
 signals:
-  void TimeToFillChanged();
-
+  void TimeToFillStrChanged();
+  void IntervallStrChanged();
+ 
 private:
   int m_nInterval;
   int m_nCurrent;
-  QString m_sTimeToFill;
-  QObject* m_pCurrentValObj;
   QObject* m_pStartBtnTextObj;
+  QObject* m_pCurrentValObj;
+  QString m_sIntervallStr;
+  QString m_sTimeToFillStr;
   MssTimer m_oSecTimer;
   FireStateType m_eFireState;
   QSoundEffect* m_oEffect;
   MssWorkerThread m_oThread;
   int m_nLastTime;
   void *  m_iphbdHandler ;
-
 };
 
 

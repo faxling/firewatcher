@@ -47,7 +47,7 @@ CoverBackground {
     }
 
     Label {
-        text:VedTimer.TimeToFill
+        text:VedTimer.TimeToFillStr
         id: idCurrentTime
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: idCoverImage.bottom

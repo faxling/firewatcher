@@ -3,23 +3,55 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 
 
-
 Page {
     objectName: "idFirstId"
-
-
     id: page1
+    Column
+    {
+        anchors.bottom:idGrid.top
+        width: parent.width
+        Slider  {
+            id:idSliderVolume
+            Component.onCompleted: VedTimer.setVolume(value)
+            onValueChanged: {
+                VedTimer.setVolume(value)
+            }
 
+            width: parent.width
+            value: 0.7
+            valueText: "Volume:" + value.toFixed(2)
+        }
+        Slider  {
+            id:idSlider
+            width: parent.width
+            Component.onCompleted: VedTimer.setInterval(value)
+            onValueChanged: {
+                VedTimer.setInterval(value)
+            }
+             value:0.2
+            valueText : "Intervall:" + VedTimer.IntervallStr
+        }
+        Slider  {
+            id:idSliderCurrent
+            objectName:"idCurrentVal"
+            Component.onCompleted: VedTimer.setCurrent(value)
+            width: parent.width
+            onValueChanged: {
+                VedTimer.setCurrent(value)
+            }
+            value:1.0
+            valueText:"Time to Fill:"+VedTimer.TimeToFillStr
+        }
+    }
     Grid
     {
         id:idGrid
         anchors.centerIn: parent
-   //     spacing: 10
+        //     spacing: 10
 
         columns: 2
 
         Button {
-
             id:idRestbtn
             text: "Reset"
             onClicked: VedTimer.resetTimer()
@@ -66,7 +98,6 @@ Page {
             onClicked: {
                 VedTimer.startTimer()
             }
-
         }
     }
 
@@ -76,44 +107,7 @@ Page {
         id: image1
         source: "spis_large.png"
     }
-    Slider  {
-        anchors.bottom: idGrid.top
-        id:idSliderCurrent
 
-        onValueChanged: {
-            VedTimer.setCurrent(value)
-        }
-
-        objectName:"idCurrentVal"
-        width: parent.width
-        value:1.0
-        valueText:"Time to Fill:"+VedTimer.TimeToFill
-    }
-
-    Slider  {
-        anchors.bottom: idSliderCurrent.top
-        id:idSlider
-        onValueChanged: {
-            valueText = "Intervall:" + VedTimer.setInterval(value)
-        }
-
-        width: parent.width
-        value: 0.2
-        valueText : "Intervall:" + VedTimer.setInterval(value)
-    }
-
-    Slider  {
-        anchors.bottom: idSlider.top
-        id:idSliderVolume
-
-        onValueChanged: {
-            VedTimer.setVolume(value)
-        }
-
-        width: parent.width
-        value: 0.2
-        valueText: "Volume:" + value.toFixed(2)
-    }
 
     Component.onCompleted: {
 

@@ -84,9 +84,10 @@ QString FormatDuration(int nTime)
 VedTimer::VedTimer()
   : QObject()
 {
-  m_pCurrentValObj = 0;
+  m_nInterval = 60;
   m_nCurrent = 0;
   m_pStartBtnTextObj = 0;
+  m_pCurrentValObj = nullptr;
   m_oEffect = new QSoundEffect(this);
   m_oEffect->setSource(QUrl("qrc:/44-04-2.wav"));
   m_oEffect->setLoopCount(QSoundEffect::Infinite);
@@ -132,26 +133,22 @@ VedTimer::VedTimer()
       SetFireState(FireStateType::FILLHERUP);
     }
 
-    if (m_pCurrentValObj != nullptr)
+    // update of value gives a call to setCurrent that updates the slider tex by UpdateValueText()
+    if ( m_nCurrent > 0)
+      SetCurrentSliderVal((double)m_nCurrent / m_nInterval);
+    else
     {
-      // update of value gives a call to setCurrent that updates the slider tex by UpdateValueText()
-      if ( m_nCurrent > 0)
-        m_pCurrentValObj->setProperty("value",(double)m_nCurrent / m_nInterval);
-      else
-      {
-        if (m_pCurrentValObj->property("value").toInt() != 0)
-          m_pCurrentValObj->setProperty("value",0);
-        else
-          UpdateValueText();
-      }
+      if (m_nCurrent == 0)
+        SetCurrentSliderVal(0);
+      UpdateValueText();
     }
-
 
   });
 
   m_eFireState = FireStateType::STOP;
   m_oSecTimer.Start(1000);
 
+  // Init Of Sliders in Qml
 }
 
 void VedTimer::SetFireState(FireStateType e) {
@@ -161,10 +158,34 @@ void VedTimer::SetFireState(FireStateType e) {
   m_pStartBtnTextObj->setProperty("nFireState", int(m_eFireState));
 }
 
-void VedTimer::UpdateValueText()
+void VedTimer::SetCurrentSliderVal(double fVal)
 {
-  m_sTimeToFill = FormatDuration(m_nCurrent);
-  emit TimeToFillChanged();
+  if (m_pCurrentValObj == nullptr)
+    return;
+  m_pCurrentValObj->setProperty("value",fVal);
+}
+
+void VedTimer::setCurrent(double fValue) {
+  m_nCurrent = fValue *  m_nInterval;
+  UpdateValueText();
+}
+
+void VedTimer::setInterval(double fVal)
+{
+  m_nInterval = fVal * 7200;
+  m_nInterval = (m_nInterval / 60) * 60;
+  if (m_nInterval < 60)
+    m_nInterval = 60;
+
+  if (m_eFireState == FireStateType::STOP)
+  {
+    m_nCurrent = m_nInterval;
+    UpdateValueText();
+  }
+
+  SetCurrentSliderVal((double)m_nCurrent / m_nInterval);
+
+  UpdateIntervalText();
 }
 
 void VedTimer::setVolume(double (tVal))
@@ -172,30 +193,36 @@ void VedTimer::setVolume(double (tVal))
   m_oEffect->setVolume(tVal);
 }
 
+void VedTimer::UpdateIntervalText()
+{
+  m_sIntervallStr = FormatDuration(m_nInterval);
+  emit IntervallStrChanged();
+}
+
+
+void VedTimer::UpdateValueText()
+{
+  m_sTimeToFillStr = FormatDuration(m_nCurrent);
+  emit TimeToFillStrChanged();
+}
+
 void VedTimer::resetTimer()
 {
+  m_oEffect->stop();
   m_nCurrent = m_nInterval;
+  SetCurrentSliderVal(1);
   UpdateValueText();
   SetFireState(FireStateType::STOP);
 }
 
-
-
-void VedTimer::setCurrent(double tVal)
-{
-  m_nCurrent = tVal *  m_nInterval;
-  UpdateValueText();
-}
-
 void VedTimer::startTimer(void)
 {
-
   m_oEffect->stop();
   switch(m_eFireState)
   {
   case FireStateType::STOP:
-    // m_nCurrent = m_nInterval;
-    UpdateValueText();
+    m_nCurrent = m_nInterval;
+    SetCurrentSliderVal(1);
     SetFireState(FireStateType::BURNING);
     return;
   case FireStateType::PAUSED:
@@ -205,29 +232,10 @@ void VedTimer::startTimer(void)
     SetFireState(FireStateType::PAUSED);
     return;
   case FireStateType::FILLHERUP:
-
     SetFireState(FireStateType::BURNING);
-    m_nCurrent = m_nInterval;
-    UpdateValueText();
+    SetCurrentSliderVal(1);
   }
 }
-
-QString VedTimer::setInterval(double tVal)
-{
-  m_nInterval = tVal * 7200;
-  m_nInterval = (m_nInterval / 60) * 60;
-  if (m_nInterval < 60)
-    m_nInterval = 60;
-
-  if (m_eFireState == FireStateType::STOP)
-  {
-    m_nCurrent = m_nInterval;
-  }
-  UpdateValueText();
-
-  return FormatDuration(m_nInterval);
-}
-
 
 VedTimer::~VedTimer()
 {
