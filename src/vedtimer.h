@@ -53,6 +53,7 @@ private:
 
 
 class QSoundEffect;
+class QFeedbackHapticsEffect;
 
 class VedTimer : public QObject
 {
@@ -65,43 +66,51 @@ public:
   Q_INVOKABLE void setCurrent(double tVal);
   Q_PROPERTY(QString TimeToFillStr READ TimeToFillStr NOTIFY TimeToFillStrChanged)
   Q_PROPERTY(QString IntervallStr READ IntervallStr NOTIFY IntervallStrChanged)
- 
+  Q_PROPERTY(QString TotalStr READ TotalStr NOTIFY TotalStrChanged)
+  Q_PROPERTY(double ElapsedTimeSliderValue READ ElapsedTimeSliderValue NOTIFY ElapsedTimeSliderValueChanged)
   enum class FireStateType {
     STOP,PAUSED, BURNING, FILLHERUP
   };
   VedTimer();
   ~VedTimer();
 
-  QString TimeToFillStr()
-  {
-    return m_sTimeToFillStr;
-  }
+  // QML Properties
+  QString TimeToFillStr();
+  QString IntervallStr();
+  QString TotalStr();
   void SetCurrentSliderVal(double fVal);
   void UpdateValueText();
   void UpdateIntervalText();
-void SetCurrentValObj(QObject*p) {
+  void UpdateTotalText();
+  double ElapsedTimeSliderValue();
+  void SetCurrentValObj(QObject*p) {
     m_pCurrentValObj = p;
   }
- void SetStartBtnTextObj(QObject*p) {
+
+  void SetStartBtnTextObj(QObject*p) {
     m_pStartBtnTextObj = p;
-  }
-  QString IntervallStr()
-  {
-    return m_sIntervallStr;
   }
 
   void SetFireState(FireStateType e);
+
 signals:
   void TimeToFillStrChanged();
   void IntervallStrChanged();
- 
+  void TotalStrChanged();
+  void ElapsedTimeSliderValueChanged();
+
 private:
   int m_nInterval;
   int m_nCurrent;
+  int m_nStartTime;
+  double m_fElapsedTimeSliderValue;
+
   QObject* m_pStartBtnTextObj;
   QObject* m_pCurrentValObj;
+  QFeedbackHapticsEffect* m_pFeedback;
   QString m_sIntervallStr;
   QString m_sTimeToFillStr;
+  QString m_sTotalStr;
   MssTimer m_oSecTimer;
   FireStateType m_eFireState;
   QSoundEffect* m_oEffect;

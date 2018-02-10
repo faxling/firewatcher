@@ -3,6 +3,7 @@
 #include "QVariant"
 #include <QSoundEffect>
 #include <sailfishapp.h>
+#include <QtFeedback/QFeedbackHapticsEffect>
 
 extern "C" {
 #include "libiphb/libiphb.h"
@@ -25,6 +26,7 @@ MssTimer::~MssTimer()
 {
   delete m_pTimer;
 }
+
 
 void MssTimer::Start(int nMilliSec)
 {
@@ -58,7 +60,6 @@ void MssTimer::timerEvent(QTimerEvent *)
     m_pTimer->stop();
 }
 
-
 QString FormatDuration(int nTime)
 {
   if (nTime<0)
@@ -86,11 +87,15 @@ VedTimer::VedTimer()
 {
   m_nInterval = 60;
   m_nCurrent = 0;
+  m_nStartTime = 0;
   m_pStartBtnTextObj = 0;
+  m_fElapsedTimeSliderValue = 0;
   m_pCurrentValObj = nullptr;
   m_oEffect = new QSoundEffect(this);
   m_oEffect->setSource(QUrl("qrc:/44-04-2.wav"));
   m_oEffect->setLoopCount(QSoundEffect::Infinite);
+  m_pFeedback = new QFeedbackHapticsEffect(this);
+  m_pFeedback->setDuration(1000);
 
   m_oThread.Set([&] {
     m_iphbdHandler =  iphb_open(0);
@@ -112,7 +117,7 @@ VedTimer::VedTimer()
   m_oThread.start();
 
   m_oSecTimer.SetTimeOut([&] {
-
+    UpdateTotalText();
     int nNow = time(0);
     if (m_eFireState == FireStateType::PAUSED || m_eFireState == FireStateType::STOP)
     {
@@ -127,8 +132,15 @@ VedTimer::VedTimer()
 
     if (m_nCurrent <= 0)
     {
+      if (m_oEffect->isPlaying()==true )
+      {
+        if ((m_nCurrent % 2) == 0)
+          m_pFeedback->start();;
+      }
       if (m_oEffect->isPlaying()==false)
+      {     
         m_oEffect->play();
+      }
 
       SetFireState(FireStateType::FILLHERUP);
     }
@@ -158,11 +170,31 @@ void VedTimer::SetFireState(FireStateType e) {
   m_pStartBtnTextObj->setProperty("nFireState", int(m_eFireState));
 }
 
+
 void VedTimer::SetCurrentSliderVal(double fVal)
 {
   if (m_pCurrentValObj == nullptr)
     return;
   m_pCurrentValObj->setProperty("value",fVal);
+}
+
+double VedTimer::ElapsedTimeSliderValue()
+{
+  return m_fElapsedTimeSliderValue;
+
+}
+
+QString VedTimer::TimeToFillStr()
+{
+  return m_sTimeToFillStr;
+}
+QString VedTimer::IntervallStr()
+{
+  return m_sIntervallStr;
+}
+QString VedTimer::TotalStr()
+{
+  return m_sTotalStr;
 }
 
 void VedTimer::setCurrent(double fValue) {
@@ -193,12 +225,43 @@ void VedTimer::setVolume(double (tVal))
   m_oEffect->setVolume(tVal);
 }
 
+void VedTimer::UpdateTotalText()
+{
+  QString sVal;
+  int nElapsed = 0 ;
+  switch (m_eFireState)
+  {
+  case FireStateType::BURNING:
+  case FireStateType::FILLHERUP:
+  case FireStateType::PAUSED:
+    nElapsed = time(0) - m_nStartTime ;
+    sVal = FormatDuration(nElapsed);
+    break;
+  case FireStateType::STOP:
+    sVal = FormatDuration(0);
+  }
+
+  if (nElapsed != 0)
+  {
+    int nNrIntervalsElapsed = nElapsed / m_nInterval;
+    double fScale = (nNrIntervalsElapsed+1)* m_nInterval;
+    m_fElapsedTimeSliderValue = nElapsed / fScale ;
+  } else
+    m_fElapsedTimeSliderValue = 0;
+
+  if (sVal != m_sTotalStr)
+  {
+    m_sTotalStr = sVal;
+    emit TotalStrChanged();
+    emit ElapsedTimeSliderValueChanged();
+  }
+}
+
 void VedTimer::UpdateIntervalText()
 {
   m_sIntervallStr = FormatDuration(m_nInterval);
   emit IntervallStrChanged();
 }
-
 
 void VedTimer::UpdateValueText()
 {
@@ -208,11 +271,14 @@ void VedTimer::UpdateValueText()
 
 void VedTimer::resetTimer()
 {
+  m_pFeedback->stop();
   m_oEffect->stop();
   m_nCurrent = m_nInterval;
   SetCurrentSliderVal(1);
   UpdateValueText();
+
   SetFireState(FireStateType::STOP);
+  UpdateTotalText();
 }
 
 void VedTimer::startTimer(void)
@@ -221,8 +287,9 @@ void VedTimer::startTimer(void)
   switch(m_eFireState)
   {
   case FireStateType::STOP:
-    m_nCurrent = m_nInterval;
-    SetCurrentSliderVal(1);
+    //   m_nCurrent = m_nInterval;
+    //   SetCurrentSliderVal(1);
+    m_nStartTime = time(0);
     SetFireState(FireStateType::BURNING);
     return;
   case FireStateType::PAUSED:

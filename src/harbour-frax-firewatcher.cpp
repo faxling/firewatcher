@@ -30,8 +30,8 @@ int main(int argc, char *argv[])
 
   pVedTimer->SetCurrentValObj(view->rootObject()->findChild<QObject*>("idCurrentVal"));
   pVedTimer->SetStartBtnTextObj(view->rootObject()->findChild<QObject*>("idStartBtn"));
-
   view->show();
+
   QObject::connect(view->engine(), &QQmlEngine::quit,
                    app, &QGuiApplication::quit);
 

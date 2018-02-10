@@ -2,14 +2,20 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 
-
 Page {
-    objectName: "idFirstId"
     id: page1
+
     Column
     {
         anchors.bottom:idGrid.top
         width: parent.width
+        Slider  {
+            enabled: false
+            id:idSliderTotalTime
+            width: parent.width
+            value: VedTimer.ElapsedTimeSliderValue
+            valueText: "Elapsed time:" + VedTimer.TotalStr
+        }
         Slider  {
             id:idSliderVolume
             Component.onCompleted: VedTimer.setVolume(value)
@@ -28,7 +34,7 @@ Page {
             onValueChanged: {
                 VedTimer.setInterval(value)
             }
-             value:0.2
+            value:0.2
             valueText : "Intervall:" + VedTimer.IntervallStr
         }
         Slider  {
