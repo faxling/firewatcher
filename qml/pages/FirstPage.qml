@@ -28,13 +28,14 @@ Page {
             valueText: "Volume:" + value.toFixed(2)
         }
         Slider  {
-            id:idSlider
+            id:idSliderInterval
+            objectName:"idSliderInterval"
             width: parent.width
-            Component.onCompleted: VedTimer.setInterval(value)
+
             onValueChanged: {
                 VedTimer.setInterval(value)
             }
-            value:0.2
+            //value:0.2
             valueText : "Intervall:" + VedTimer.IntervallStr
         }
         Slider  {
@@ -114,12 +115,6 @@ Page {
         source: "spis_large.png"
     }
 
-
-    Component.onCompleted: {
-
-        // idIntervalText.text = VedTimer.setInterval(idSlider.value)
-        //  idValText.text = idIntervalText.text
-    }
 }
 
 

@@ -54,7 +54,7 @@ private:
 
 class QSoundEffect;
 class QFeedbackHapticsEffect;
-
+class QSettings;
 class VedTimer : public QObject
 {
   Q_OBJECT
@@ -87,6 +87,8 @@ public:
     m_pCurrentValObj = p;
   }
 
+  void SetIntervallSliderObj(QObject*p);
+
   void SetStartBtnTextObj(QObject*p) {
     m_pStartBtnTextObj = p;
   }
@@ -107,6 +109,7 @@ private:
 
   QObject* m_pStartBtnTextObj;
   QObject* m_pCurrentValObj;
+  QObject* m_pIntervallSliderObj;
   QFeedbackHapticsEffect* m_pFeedback;
   QString m_sIntervallStr;
   QString m_sTimeToFillStr;
@@ -114,6 +117,7 @@ private:
   MssTimer m_oSecTimer;
   FireStateType m_eFireState;
   QSoundEffect* m_oEffect;
+  QSettings* m_pSettings;
   MssWorkerThread m_oThread;
   int m_nLastTime;
   void *  m_iphbdHandler ;

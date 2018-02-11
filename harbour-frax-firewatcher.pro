@@ -11,7 +11,8 @@
 
 # The name of your application
 TARGET = harbour-frax-firewatcher
-QT += multimedQT += feedback
+QT += multimedia
+QT += feedback
 INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)/usr/include/c++/4.8.3
 QMAKE_CXXFLAGS += -std=c++0x
 
