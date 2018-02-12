@@ -1,0 +1,1 @@
+Timer that runs in cycles. An alarm sounds when it is time to put a new log in the stove or when it is time to stir in the pot on the stove or anything that needs regular attention.

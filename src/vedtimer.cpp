@@ -2,8 +2,12 @@
 #include "time.h"
 #include "QVariant"
 #include <QSoundEffect>
+#include <QSettings>
 #include <sailfishapp.h>
+
+#ifdef USE_FEEDBACK
 #include <QtFeedback/QFeedbackHapticsEffect>
+#endif
 
 extern "C" {
 #include "libiphb/libiphb.h"
@@ -94,9 +98,13 @@ VedTimer::VedTimer()
   m_oEffect = new QSoundEffect(this);
   m_oEffect->setSource(QUrl("qrc:/44-04-2.wav"));
   m_oEffect->setLoopCount(QSoundEffect::Infinite);
+
+#ifdef USE_FEEDBACK
   m_pFeedback = new QFeedbackHapticsEffect(this);
   m_pFeedback->setDuration(1000);
+#endif
 
+  m_pSettings = new QSettings("frax","Firewatcher",this);
   m_oThread.Set([&] {
     m_iphbdHandler =  iphb_open(0);
     for (;;)
@@ -134,11 +142,14 @@ VedTimer::VedTimer()
     {
       if (m_oEffect->isPlaying()==true )
       {
+
+#ifdef USE_FEEDBACK
         if ((m_nCurrent % 2) == 0)
-          m_pFeedback->start();;
+          m_pFeedback->start();
+#endif
       }
       if (m_oEffect->isPlaying()==false)
-      {     
+      {
         m_oEffect->play();
       }
 
@@ -202,8 +213,17 @@ void VedTimer::setCurrent(double fValue) {
   UpdateValueText();
 }
 
+void VedTimer::SetIntervallSliderObj(QObject*p) {
+  m_pIntervallSliderObj = p;
+  double fVal = m_pSettings->value("intervall",0.2).toDouble();
+  m_pIntervallSliderObj->setProperty("value",fVal);
+  setInterval(fVal);
+}
+
 void VedTimer::setInterval(double fVal)
 {
+  m_pSettings->setValue("intervall",fVal);
+
   m_nInterval = fVal * 7200;
   m_nInterval = (m_nInterval / 60) * 60;
   if (m_nInterval < 60)
@@ -216,8 +236,8 @@ void VedTimer::setInterval(double fVal)
   }
 
   SetCurrentSliderVal((double)m_nCurrent / m_nInterval);
-
   UpdateIntervalText();
+
 }
 
 void VedTimer::setVolume(double (tVal))
@@ -271,7 +291,10 @@ void VedTimer::UpdateValueText()
 
 void VedTimer::resetTimer()
 {
+#ifdef USE_FEEDBACK
   m_pFeedback->stop();
+#endif
+
   m_oEffect->stop();
   m_nCurrent = m_nInterval;
   SetCurrentSliderVal(1);
@@ -287,8 +310,6 @@ void VedTimer::startTimer(void)
   switch(m_eFireState)
   {
   case FireStateType::STOP:
-    //   m_nCurrent = m_nInterval;
-    //   SetCurrentSliderVal(1);
     m_nStartTime = time(0);
     SetFireState(FireStateType::BURNING);
     return;
@@ -306,5 +327,6 @@ void VedTimer::startTimer(void)
 
 VedTimer::~VedTimer()
 {
+
 
 }

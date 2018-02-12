@@ -12,10 +12,10 @@
 # The name of your application
 TARGET = harbour-frax-firewatcher
 QT += multimedia
-QT += feedback
+# QT += feedback
 INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)/usr/include/c++/4.8.3
 QMAKE_CXXFLAGS += -std=c++0x
-
+# DEFINES += USE_FEEDBACK
 CONFIG += sailfishapp
 
 SOURCES += src/harbour-frax-firewatcher.cpp \

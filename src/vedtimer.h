@@ -110,7 +110,10 @@ private:
   QObject* m_pStartBtnTextObj;
   QObject* m_pCurrentValObj;
   QObject* m_pIntervallSliderObj;
+
+#ifdef USE_FEEDBACK
   QFeedbackHapticsEffect* m_pFeedback;
+#endif
   QString m_sIntervallStr;
   QString m_sTimeToFillStr;
   QString m_sTotalStr;
