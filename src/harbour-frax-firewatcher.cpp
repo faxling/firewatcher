@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
   p->setContextProperty("VedTimer", pVedTimer);
   view->setSource(SailfishApp::pathTo(qml));
 
+  pVedTimer->SetVolumeSliderObj(view->rootObject()->findChild<QObject*>("idSliderVolume"));
   pVedTimer->SetIntervallSliderObj(view->rootObject()->findChild<QObject*>("idSliderInterval"));
   pVedTimer->SetCurrentValObj(view->rootObject()->findChild<QObject*>("idCurrentVal"));
   pVedTimer->SetStartBtnTextObj(view->rootObject()->findChild<QObject*>("idStartBtn"));

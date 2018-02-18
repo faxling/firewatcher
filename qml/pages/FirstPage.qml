@@ -18,13 +18,12 @@ Page {
         }
         Slider  {
             id:idSliderVolume
-            Component.onCompleted: VedTimer.setVolume(value)
+            objectName:"idSliderVolume"
             onValueChanged: {
                 VedTimer.setVolume(value)
             }
 
             width: parent.width
-            value: 0.7
             valueText: "Volume:" + value.toFixed(2)
         }
         Slider  {

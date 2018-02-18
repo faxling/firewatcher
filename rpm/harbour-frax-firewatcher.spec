@@ -1,5 +1,9 @@
 Name:       harbour-frax-firewatcher
 
+
+%define __provides_exclude_from ^%{_datadir}/.*$
+%define __requires_exclude ^libQt5Feedback.*
+
 %{!?qtc_qmake:%define qtc_qmake %qmake}
 %{!?qtc_qmake5:%define qtc_qmake5 %qmake5}
 %{!?qtc_make:%define qtc_make make}
@@ -16,7 +20,6 @@ BuildRequires:  pkgconfig(sailfishapp) >= 1.0.2
 BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Qml)
 BuildRequires:  pkgconfig(Qt5Quick)
-BuildRequires:  pkgconfig(Qt5Feedback)
 BuildRequires:  desktop-file-utils
 
 %description
@@ -50,6 +53,12 @@ rm -rf %{buildroot}
 desktop-file-install --delete-original       \
   --dir %{buildroot}%{_datadir}/applications             \
    %{buildroot}%{_datadir}/applications/*.desktop
+
+
+# Copy here the blacklisted libraries
+
+install -d %{buildroot}/usr/share/%{name}/lib
+install -m 644 -p /usr/lib/libQt5Feedback.so.0 %{buildroot}/usr/share/%{name}/lib/
 
 %files
 %defattr(-,root,root,-)

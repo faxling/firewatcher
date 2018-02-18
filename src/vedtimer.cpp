@@ -1,7 +1,8 @@
 #include "VedTimer.h"
 #include "time.h"
 #include "QVariant"
-#include <QSoundEffect>
+#include <QMediaPlayer>
+#include <QMediaPlaylist>
 #include <QSettings>
 #include <sailfishapp.h>
 
@@ -95,16 +96,17 @@ VedTimer::VedTimer()
   m_pStartBtnTextObj = 0;
   m_fElapsedTimeSliderValue = 0;
   m_pCurrentValObj = nullptr;
-  m_oEffect = new QSoundEffect(this);
-  m_oEffect->setSource(QUrl("qrc:/44-04-2.wav"));
-  m_oEffect->setLoopCount(QSoundEffect::Infinite);
-
+  m_oEffect = new QMediaPlayer(this);
+  m_pPlayList = new QMediaPlaylist(m_oEffect);
+  m_pPlayList->addMedia(QUrl("qrc:/44-04-2.mp3"));
+  m_pPlayList->setPlaybackMode(QMediaPlaylist::Loop);
+  m_oEffect->setPlaylist(m_pPlayList);
 #ifdef USE_FEEDBACK
   m_pFeedback = new QFeedbackHapticsEffect(this);
   m_pFeedback->setDuration(1000);
 #endif
 
-  m_pSettings = new QSettings("frax","Firewatcher",this);
+  m_pSettings = new QSettings("harbour-frax-firewatcher","Firewatcher",this);
   m_oThread.Set([&] {
     m_iphbdHandler =  iphb_open(0);
     for (;;)
@@ -140,7 +142,7 @@ VedTimer::VedTimer()
 
     if (m_nCurrent <= 0)
     {
-      if (m_oEffect->isPlaying()==true )
+      if (m_oEffect->state() == QMediaPlayer::PlayingState)
       {
 
 #ifdef USE_FEEDBACK
@@ -148,7 +150,7 @@ VedTimer::VedTimer()
           m_pFeedback->start();
 #endif
       }
-      if (m_oEffect->isPlaying()==false)
+      if (m_oEffect->state() != QMediaPlayer::PlayingState)
       {
         m_oEffect->play();
       }
@@ -212,7 +214,13 @@ void VedTimer::setCurrent(double fValue) {
   m_nCurrent = fValue *  m_nInterval;
   UpdateValueText();
 }
+void VedTimer::SetVolumeSliderObj(QObject*p) {
 
+  m_pVolumeSliderObj = p;
+  double fVal = m_pSettings->value("volume",0.5).toDouble();
+  m_pVolumeSliderObj->setProperty("value",fVal);
+
+}
 void VedTimer::SetIntervallSliderObj(QObject*p) {
   m_pIntervallSliderObj = p;
   double fVal = m_pSettings->value("intervall",0.2).toDouble();
@@ -240,9 +248,10 @@ void VedTimer::setInterval(double fVal)
 
 }
 
-void VedTimer::setVolume(double (tVal))
+void VedTimer::setVolume(double tVal)
 {
-  m_oEffect->setVolume(tVal);
+  m_oEffect->setVolume(tVal*100);
+  m_pSettings->setValue("volume",tVal);
 }
 
 void VedTimer::UpdateTotalText()
@@ -327,6 +336,6 @@ void VedTimer::startTimer(void)
 
 VedTimer::~VedTimer()
 {
-
+  m_oEffect->stop();
 
 }
