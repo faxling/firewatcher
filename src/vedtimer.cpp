@@ -4,6 +4,9 @@
 #include <QMediaPlayer>
 #include <QMediaPlaylist>
 #include <QSettings>
+#include <QDBusConnection>
+#include <QDBusInterface>
+
 #include <sailfishapp.h>
 
 #ifdef USE_FEEDBACK
@@ -12,6 +15,38 @@
 
 extern "C" {
 #include "libiphb/libiphb.h"
+}
+
+void ScreenOn(bool b)
+{
+  QDBusConnection system = QDBusConnection::connectToBus(QDBusConnection::SystemBus,
+                                                         "system");
+  QDBusInterface interface("com.nokia.mce",
+                           "/com/nokia/mce/request",
+                           "com.nokia.mce.request",
+                           system);
+
+
+  if (b == true)
+  {
+
+    // interface.call( "req_display_state_dim");
+    interface.call("req_display_state_on");
+    interface.call("req_display_blanking_pause");
+
+    /*
+    QDBusInterface interface2("org.nemomobile.lipstick",
+                             "/devicelock",
+                             "org.nemomobile.lipstick.devicelock",
+                             system);
+
+    interface2.call("setState",0);
+    */
+  }
+  else
+    interface.call("req_display_cancel_blanking_pause");
+
+  //   QDBusConnection::disconnectFromBus("system");
 }
 
 
@@ -95,7 +130,7 @@ VedTimer::VedTimer()
   m_nStartTime = 0;
   m_pStartBtnTextObj = 0;
   m_fElapsedTimeSliderValue = 0;
-  m_pCurrentValObj = nullptr;
+  m_pCurrentSliderValObj = nullptr;
   m_oEffect = new QMediaPlayer(this);
   m_pPlayList = new QMediaPlaylist(m_oEffect);
   m_pPlayList->addMedia(QUrl("qrc:/44-04-2.mp3"));
@@ -153,6 +188,9 @@ VedTimer::VedTimer()
       if (m_oEffect->state() != QMediaPlayer::PlayingState)
       {
         m_oEffect->play();
+        ScreenOn(true);
+        QMetaObject::invokeMethod(m_pAppObj, "activate");
+
       }
 
       SetFireState(FireStateType::FILLHERUP);
@@ -186,9 +224,10 @@ void VedTimer::SetFireState(FireStateType e) {
 
 void VedTimer::SetCurrentSliderVal(double fVal)
 {
-  if (m_pCurrentValObj == nullptr)
+  if (m_pCurrentSliderValObj == nullptr)
     return;
-  m_pCurrentValObj->setProperty("value",fVal);
+  m_pCurrentSliderValObj->setProperty("value",fVal);
+  m_pCurrentSliderValObj->setProperty("stepSize", 1.0 / m_nInterval );
 }
 
 double VedTimer::ElapsedTimeSliderValue()
@@ -214,6 +253,7 @@ void VedTimer::setCurrent(double fValue) {
   m_nCurrent = fValue *  m_nInterval;
   UpdateValueText();
 }
+
 void VedTimer::SetVolumeSliderObj(QObject*p) {
 
   m_pVolumeSliderObj = p;
@@ -221,10 +261,18 @@ void VedTimer::SetVolumeSliderObj(QObject*p) {
   m_pVolumeSliderObj->setProperty("value",fVal);
 
 }
+
+void VedTimer::SetCurrentSliderValObj(QObject*p) {
+  m_pCurrentSliderValObj = p;
+  SetCurrentSliderVal(1);
+}
+
 void VedTimer::SetIntervallSliderObj(QObject*p) {
   m_pIntervallSliderObj = p;
   double fVal = m_pSettings->value("intervall",0.2).toDouble();
   m_pIntervallSliderObj->setProperty("value",fVal);
+
+
   setInterval(fVal);
 }
 
@@ -233,9 +281,21 @@ void VedTimer::setInterval(double fVal)
   m_pSettings->setValue("intervall",fVal);
 
   m_nInterval = fVal * 7200;
-  m_nInterval = (m_nInterval / 60) * 60;
-  if (m_nInterval < 60)
-    m_nInterval = 60;
+  if (m_nInterval > 600)
+  {
+    m_pIntervallSliderObj->setProperty("stepSize", 1.0 / 120 );
+    m_nInterval = (m_nInterval / 60) * 60;
+  }
+  else
+  {
+    m_pIntervallSliderObj->setProperty("stepSize", 1.0 / 7200 );
+    if (m_nInterval < 10)
+    {
+      m_pIntervallSliderObj->setProperty("value", 10.0 / 7200);
+      return;
+    }
+  }
+
 
   if (m_eFireState == FireStateType::STOP)
   {
@@ -244,6 +304,7 @@ void VedTimer::setInterval(double fVal)
   }
 
   SetCurrentSliderVal((double)m_nCurrent / m_nInterval);
+
   UpdateIntervalText();
 
 }

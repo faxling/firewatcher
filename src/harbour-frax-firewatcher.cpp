@@ -20,6 +20,7 @@ int main(int argc, char *argv[])
 {
   QGuiApplication *app = SailfishApp::application(argc, argv);
   QQuickView *view = SailfishApp::createView();
+
   // std::unique_ptr<VedTimer> pVedTimer(new VedTimer);
   VedTimer* pVedTimer(new VedTimer);
   QString qml = "qml/harbour-frax-firewatcher.qml";
@@ -30,9 +31,9 @@ int main(int argc, char *argv[])
 
   pVedTimer->SetVolumeSliderObj(view->rootObject()->findChild<QObject*>("idSliderVolume"));
   pVedTimer->SetIntervallSliderObj(view->rootObject()->findChild<QObject*>("idSliderInterval"));
-  pVedTimer->SetCurrentValObj(view->rootObject()->findChild<QObject*>("idCurrentVal"));
+  pVedTimer->SetCurrentSliderValObj(view->rootObject()->findChild<QObject*>("idSliderCurrentVal"));
   pVedTimer->SetStartBtnTextObj(view->rootObject()->findChild<QObject*>("idStartBtn"));
-
+  pVedTimer->SetAppObj(view->rootObject());
   view->show();
 
   QObject::connect(view->engine(), &QQmlEngine::quit,

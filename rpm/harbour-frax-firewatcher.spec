@@ -9,11 +9,11 @@ Name:       harbour-frax-firewatcher
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    Reminds you when to put on a log in the stove
-Version:    1.0
+Version:    1.1
 Release:    1
 Group:      Qt/Qt
 License:    GPLv2
-URL:        http://example.org/
+URL:        https://github.com/faxling
 Source0:    %{name}-%{version}.tar.bz2
 Requires:   sailfishsilica-qt5 >= 0.10.9
 BuildRequires:  pkgconfig(sailfishapp) >= 1.0.2

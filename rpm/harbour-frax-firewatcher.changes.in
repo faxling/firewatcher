@@ -8,6 +8,10 @@
 # * date Author's Name <author's email> version-release
 # - Summary of changes
 
+* Sun Apr 19 2020 Fredrik Axling <faxling11@gmail.com> 0.1.1-1
+- Step buttons on sliders. Possible to adjust small intervalls
+- App pops up on alarm
+
 * Sun Jan 7 2018 Fredrik Axling <faxling11@gmail.com> 0.0.1-1
 - First version
 - Buttons

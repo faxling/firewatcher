@@ -84,10 +84,10 @@ public:
   void UpdateIntervalText();
   void UpdateTotalText();
   double ElapsedTimeSliderValue();
-  void SetCurrentValObj(QObject*p) {
-    m_pCurrentValObj = p;
+  void SetCurrentSliderValObj(QObject*p);
+  void SetAppObj(QObject*p) {
+    m_pAppObj = p;
   }
-
   void SetIntervallSliderObj(QObject*p);
   void SetVolumeSliderObj(QObject*p);
   void SetStartBtnTextObj(QObject*p) {
@@ -107,11 +107,11 @@ private:
   int m_nCurrent;
   int m_nStartTime;
   double m_fElapsedTimeSliderValue;
-
+  QObject* m_pAppObj;
   QObject* m_pStartBtnTextObj;
-  QObject* m_pCurrentValObj;
-  QObject* m_pIntervallSliderObj;
-  QObject* m_pVolumeSliderObj;
+  QObject* m_pCurrentSliderValObj = nullptr;
+  QObject* m_pIntervallSliderObj = nullptr;
+  QObject* m_pVolumeSliderObj = nullptr;
 #ifdef USE_FEEDBACK
   QFeedbackHapticsEffect* m_pFeedback;
 #endif

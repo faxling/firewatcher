@@ -34,10 +34,11 @@ import "pages"
 
 ApplicationWindow
 {
-    initialPage: Component { FirstPage { } }
-    cover: Qt.resolvedUrl("cover/CoverPage.qml")
-    allowedOrientations: Orientation.Portrait
-    _defaultPageOrientations: Orientation.Portrait
+  initialPage: Component { FirstPage { } }
+  cover: Qt.resolvedUrl("cover/CoverPage.qml")
+  allowedOrientations: Orientation.Portrait
+  _defaultPageOrientations: Orientation.Portrait
+  objectName: "idApplicationWindow"
 }
 
 

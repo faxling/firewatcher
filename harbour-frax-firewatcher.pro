@@ -13,7 +13,9 @@
 TARGET = harbour-frax-firewatcher
 QT += multimedia
 QT += feedback
-INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)/usr/include/c++/4.8.3
+QT += dbus
+INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/c++/4.9.4
+INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)/usr/include
 QMAKE_CXXFLAGS += -std=c++0x
 DEFINES += USE_FEEDBACK
 CONFIG += sailfishapp
@@ -25,6 +27,7 @@ SOURCES += src/harbour-frax-firewatcher.cpp \
 OTHER_FILES += qml/harbour-frax-firewatcher.qml \
     qml/cover/CoverPage.qml \
     qml/pages/FirstPage.qml \
+    qml/pages/StepSlider.qml \
     qml/pages/spis_large.png \
     rpm/harbour-frax-firewatcher.changes.in \
     rpm/harbour-frax-firewatcher.spec \
